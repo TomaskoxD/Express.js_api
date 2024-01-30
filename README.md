@@ -1,3 +1,5 @@
+# Node.js Express MySQL API with JWT Authentication
+
 ## Used technologies
 - Express.js
 - MySQL
