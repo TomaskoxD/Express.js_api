@@ -46,5 +46,14 @@ Tutorials
 - `DELETE api/tutorials/:id` - Delete a tutorial by id
 - `DELETE api/tutorials` - Delete all tutorials
 
+Classes
+- `POST api/classes` - Create a new class
+- `POST api/classes/students` - Add students to a class
+- `POST api/classes/tutorials` - Add tutorials to a class
+- `GET api/classes` - Get all classes
+- `GET api/classes/:id` - Get a class by id
+- `DELETE api/classes/students` - Delete all students from a class
+- `DELETE api/classes/tutorials` - Delete all tutorials from a class
+
 ## Database
 Local MySQL database is used. The database is named `nodejs_express_mysql` and the tables are named `authors`, `teachers` and `tutorials`. The database can be created with the script `db.sql` in the root folder.
