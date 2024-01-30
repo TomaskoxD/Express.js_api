@@ -2,24 +2,27 @@ const sql = require("./db.js");
 
 // constructor
 
-const Author = function (author) {
-  this.name = author.name;
-  this.email = author.email;
-  this.active = author.active;
+const Teacher = function (teacher) {
+  this.name = teacher.name;
+  this.email = teacher.email;
+    this.office = teacher.office;
+    this.type_of_employment = teacher.type_of_employment;
 };
 // i have table called person in my database and author which is specialization of person
-Author.create = (newAuthor, result) => {
-    //remove active from newAuthor
-    active = newAuthor.active;
-    delete newAuthor.active;
-    sql.query("INSERT INTO person SET ?", newAuthor, (err, res) => {
+Teacher.create = (newTeacher, result) => {
+    //remove active from newTeacher
+    office = newTeacher.office;
+    type_of_employment = newTeacher.type_of_employment;
+    delete newTeacher.office;
+    delete newTeacher.type_of_employment;
+    sql.query("INSERT INTO person SET ?", newTeacher, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(null, err);
             return;
 
         }
-        sql.query("INSERT INTO author SET ?", { id: res.insertId, active: active }, (err, res) => {
+        sql.query("INSERT INTO teacher SET ?", { id: res.insertId, office: office, type_of_employment: type_of_employment }, (err, res) => {
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
@@ -27,14 +30,14 @@ Author.create = (newAuthor, result) => {
 
             }
 
-            console.log("created author: ", { id: res.insertId, ...newAuthor });
-            result(null, { id: res.insertId, ...newAuthor });
+            console.log("created teacher: ", { id: res.insertId, ...newTeacher });
+            result(null, { id: res.insertId, ...newTeacher });
         });
     });
 };
 
-Author.findById = (id, result) => {
-    sql.query(`SELECT * FROM person JOIN author ON person.id = author.id WHERE person.id = ${id}`, (err, res) => {
+Teacher.findById = (id, result) => {
+    sql.query(`SELECT * FROM person JOIN teacher ON person.id = teacher.id WHERE person.id = ${id}`, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(null, err);
@@ -43,7 +46,7 @@ Author.findById = (id, result) => {
         }
 
         if (res.length) {
-            console.log("found author: ", res[0]);
+            console.log("found teacher: ", res[0]);
             result(null, res[0]);
             return;
         
@@ -54,8 +57,8 @@ Author.findById = (id, result) => {
     });
 };
 
-Author.getAll = (name, result) => {
-    let query = "SELECT * FROM person JOIN author ON person.id = author.id";
+Teacher.getAll = (name, result) => {
+    let query = "SELECT * FROM person JOIN teacher ON person.id = teacher.id";
 
     if (name) {
         query += ` WHERE person.name LIKE '%${name}%'`;
@@ -69,18 +72,20 @@ Author.getAll = (name, result) => {
 
         }
 
-        console.log("authors: ", res);
+        console.log("teachers: ", res);
         result(null, res);
     });
 };
 
-Author.updateById = (id, author, result) => {
+Teacher.updateById = (id, newTeacher, result) => {
     //remove active from author
-    active = author.active;
-    delete author.active;
+    office = newTeacher.office;
+    type_of_employment = newTeacher.type_of_employment;
+    delete newTeacher.office;
+    delete newTeacher.type_of_employment;
     sql.query(
         "UPDATE person SET name = ?, email = ? WHERE id = ?",
-        [author.name, author.email, id],
+        [newTeacher.name, newTeacher.email, id],
         (err, res) => {
             if (err) {
                 console.log("error: ", err);
@@ -97,8 +102,8 @@ Author.updateById = (id, author, result) => {
             }
 
             sql.query(
-                "UPDATE author SET active = ? WHERE id = ?",
-                [active, id],
+                "UPDATE teacher SET office = ?, type_of_employment = ? WHERE id = ?",
+                [office, type_of_employment, id],
                 (err, res) => {
                     if (err) {
                         console.log("error: ", err);
@@ -107,30 +112,18 @@ Author.updateById = (id, author, result) => {
 
                     }
 
-                    console.log("updated author: ", { id: id, ...author });
-                    result(null, { id: id, ...author });
+                    console.log("updated teacher: ", { id: id, ...newTeacher });
+                    result(null, { id: id, ...newTeacher });
                 }
             );
         }
     );
 };
 
-Author.remove = (id, result) => {
-    // remove all tutorials by the author
-    sql.query("DELETE FROM tutorials WHERE authorId = ?", id, (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(null, err);
-            return;
+Teacher.remove = (id, result) => {
 
-        }
 
-        if (res.affectedRows > 0) {
-            console.log(`deleted ${res.affectedRows} tutorials`);
-
-        }
-
-        sql.query("DELETE FROM author WHERE id = ?", id, (err, res) => {
+        sql.query("DELETE FROM teacher WHERE id = ?", id, (err, res) => {
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
@@ -146,16 +139,16 @@ Author.remove = (id, result) => {
 
                 }
 
-                console.log("deleted author with id: ", id);
+                console.log("deleted teacher with id: ", id);
                 result(null, res);
             });
         });
-    });
+    
 };
 
-Author.removeAll = result => {
+Teacher.removeAll = result => {
     // get all ids of authors to delete tutorials and authors
-    sql.query("SELECT id FROM author", (err, res) => {
+    sql.query("SELECT id FROM teacher", (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(null, err);
@@ -169,7 +162,7 @@ Author.removeAll = result => {
         });
 
 
-    sql.query("DELETE FROM author", (err, res) => {
+    sql.query("DELETE FROM teacher", (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(null, err);
@@ -185,23 +178,11 @@ Author.removeAll = result => {
 
             }
 
-            sql.query("DELETE FROM tutorials WHERE authorId IN (?)", [ids], (err, res) => {
-                if (err) {
-                    console.log("error: ", err);
-                    result(null, err);
-                    return;
-
-                }
-
-                console.log(`deleted ${res.affectedRows} tutorials`);
-                console.log(`deleted ${res.affectedRows} authors`);
-
-                result(null, res);
-            });
+            
         });
     });
     });
 };
             
 
-module.exports = Author;
+module.exports = Teacher;
