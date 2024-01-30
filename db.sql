@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS `user` (
+    id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, username VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+CREATE TABLE IF NOT EXISTS `person` (
+    id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+-- author is specializations of person
+CREATE TABLE IF NOT EXISTS `author` (
+    id int(11) NOT NULL FOREIGN KEY REFERENCES person (id), active BOOLEAN DEFAULT false
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+CREATE TABLE IF NOT EXISTS `teacher` (
+    id INT(11) NOT NULL, office VARCHAR(255) NOT NULL, type_of_employment VARCHAR(255) NOT NULL, FOREIGN KEY (id) REFERENCES person (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+CREATE TABLE IF NOT EXISTS `tutorials` (
+    id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, title varchar(255) NOT NULL, description varchar(255), published BOOLEAN DEFAULT false, author_id int, FOREIGN KEY (author_id) REFERENCES author (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;

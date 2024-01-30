@@ -17,6 +17,7 @@ exports.create = (req, res) => {
     author_id: req.body.author_id
   });
 
+
   // Save Tutorial in the database
   Tutorial.create(tutorial, (err, data) => {
     if (err)
@@ -27,6 +28,7 @@ exports.create = (req, res) => {
     else res.send(data);
   });
 };
+
 
 // Retrieve all Tutorials from the database (with condition).
 exports.findAll = (req, res) => {
@@ -42,6 +44,7 @@ exports.findAll = (req, res) => {
   });
 };
 
+
 exports.findAllFilter = (req, res) => {
   const conditions = {};
   // create dictionary of conditions
@@ -51,7 +54,7 @@ exports.findAllFilter = (req, res) => {
     }
   }
   console.log(conditions);
-  
+
   Tutorial.findAll(conditions, (err, data) => {
     if (err)
       res.status(500).send({
@@ -61,7 +64,6 @@ exports.findAllFilter = (req, res) => {
     else res.send(data);
   });
 };
-
 
 
 // Find a single Tutorial by Id

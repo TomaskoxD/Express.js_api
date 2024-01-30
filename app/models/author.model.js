@@ -3,11 +3,11 @@ const sql = require("./db.js");
 // constructor
 
 const Author = function (author) {
-  this.name = author.name;
-  this.email = author.email;
-  this.active = author.active;
+    this.name = author.name;
+    this.email = author.email;
+    this.active = author.active;
 };
-// i have table called person in my database and author which is specialization of person
+
 Author.create = (newAuthor, result) => {
     //remove active from newAuthor
     active = newAuthor.active;
@@ -17,14 +17,13 @@ Author.create = (newAuthor, result) => {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
+
         sql.query("INSERT INTO author SET ?", { id: res.insertId, active: active }, (err, res) => {
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
                 return;
-
             }
 
             console.log("created author: ", { id: res.insertId, ...newAuthor });
@@ -39,14 +38,12 @@ Author.findById = (id, result) => {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
 
         if (res.length) {
             console.log("found author: ", res[0]);
             result(null, res[0]);
             return;
-        
         }
 
         // not found Author with the id
@@ -66,7 +63,6 @@ Author.getAll = (name, result) => {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
 
         console.log("authors: ", res);
@@ -86,14 +82,12 @@ Author.updateById = (id, author, result) => {
                 console.log("error: ", err);
                 result(null, err);
                 return;
-
             }
 
             if (res.affectedRows == 0) {
                 // not found Author with the id
                 result({ kind: "not_found" }, null);
                 return;
-
             }
 
             sql.query(
@@ -104,7 +98,6 @@ Author.updateById = (id, author, result) => {
                         console.log("error: ", err);
                         result(null, err);
                         return;
-
                     }
 
                     console.log("updated author: ", { id: id, ...author });
@@ -122,7 +115,6 @@ Author.remove = (id, result) => {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
 
         if (res.affectedRows > 0) {
@@ -135,7 +127,6 @@ Author.remove = (id, result) => {
                 console.log("error: ", err);
                 result(null, err);
                 return;
-
             }
 
             sql.query("DELETE FROM person WHERE id = ?", id, (err, res) => {
@@ -143,7 +134,6 @@ Author.remove = (id, result) => {
                     console.log("error: ", err);
                     result(null, err);
                     return;
-
                 }
 
                 console.log("deleted author with id: ", id);
@@ -160,7 +150,6 @@ Author.removeAll = result => {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
 
         let ids = [];
@@ -169,39 +158,36 @@ Author.removeAll = result => {
         });
 
 
-    sql.query("DELETE FROM author", (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(null, err);
-            return;
-
-        }
-
-        sql.query("DELETE FROM person WHERE id IN (?)", [ids], (err, res) => {
+        sql.query("DELETE FROM author", (err, res) => {
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
                 return;
-
             }
 
-            sql.query("DELETE FROM tutorials WHERE authorId IN (?)", [ids], (err, res) => {
+            sql.query("DELETE FROM person WHERE id IN (?)", [ids], (err, res) => {
                 if (err) {
                     console.log("error: ", err);
                     result(null, err);
                     return;
-
                 }
 
-                console.log(`deleted ${res.affectedRows} tutorials`);
-                console.log(`deleted ${res.affectedRows} authors`);
+                sql.query("DELETE FROM tutorials WHERE authorId IN (?)", [ids], (err, res) => {
+                    if (err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                        return;
+                    }
 
-                result(null, res);
+                    console.log(`deleted ${res.affectedRows} tutorials`);
+                    console.log(`deleted ${res.affectedRows} authors`);
+
+                    result(null, res);
+                });
             });
         });
     });
-    });
 };
-            
+
 
 module.exports = Author;

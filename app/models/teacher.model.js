@@ -3,14 +3,13 @@ const sql = require("./db.js");
 // constructor
 
 const Teacher = function (teacher) {
-  this.name = teacher.name;
-  this.email = teacher.email;
+    this.name = teacher.name;
+    this.email = teacher.email;
     this.office = teacher.office;
     this.type_of_employment = teacher.type_of_employment;
 };
-// i have table called person in my database and author which is specialization of person
+
 Teacher.create = (newTeacher, result) => {
-    //remove active from newTeacher
     office = newTeacher.office;
     type_of_employment = newTeacher.type_of_employment;
     delete newTeacher.office;
@@ -20,14 +19,13 @@ Teacher.create = (newTeacher, result) => {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
+        
         sql.query("INSERT INTO teacher SET ?", { id: res.insertId, office: office, type_of_employment: type_of_employment }, (err, res) => {
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
                 return;
-
             }
 
             console.log("created teacher: ", { id: res.insertId, ...newTeacher });
@@ -42,17 +40,14 @@ Teacher.findById = (id, result) => {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
 
         if (res.length) {
             console.log("found teacher: ", res[0]);
             result(null, res[0]);
             return;
-        
         }
 
-        // not found Author with the id
         result({ kind: "not_found" }, null);
     });
 };
@@ -69,7 +64,6 @@ Teacher.getAll = (name, result) => {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
 
         console.log("teachers: ", res);
@@ -78,7 +72,6 @@ Teacher.getAll = (name, result) => {
 };
 
 Teacher.updateById = (id, newTeacher, result) => {
-    //remove active from author
     office = newTeacher.office;
     type_of_employment = newTeacher.type_of_employment;
     delete newTeacher.office;
@@ -91,14 +84,11 @@ Teacher.updateById = (id, newTeacher, result) => {
                 console.log("error: ", err);
                 result(null, err);
                 return;
-
             }
 
             if (res.affectedRows == 0) {
-                // not found Author with the id
                 result({ kind: "not_found" }, null);
                 return;
-
             }
 
             sql.query(
@@ -109,7 +99,6 @@ Teacher.updateById = (id, newTeacher, result) => {
                         console.log("error: ", err);
                         result(null, err);
                         return;
-
                     }
 
                     console.log("updated teacher: ", { id: id, ...newTeacher });
@@ -123,37 +112,33 @@ Teacher.updateById = (id, newTeacher, result) => {
 Teacher.remove = (id, result) => {
 
 
-        sql.query("DELETE FROM teacher WHERE id = ?", id, (err, res) => {
+    sql.query("DELETE FROM teacher WHERE id = ?", id, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+
+        sql.query("DELETE FROM person WHERE id = ?", id, (err, res) => {
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
                 return;
-
             }
 
-            sql.query("DELETE FROM person WHERE id = ?", id, (err, res) => {
-                if (err) {
-                    console.log("error: ", err);
-                    result(null, err);
-                    return;
-
-                }
-
-                console.log("deleted teacher with id: ", id);
-                result(null, res);
-            });
+            console.log("deleted teacher with id: ", id);
+            result(null, res);
         });
-    
+    });
+
 };
 
 Teacher.removeAll = result => {
-    // get all ids of authors to delete tutorials and authors
     sql.query("SELECT id FROM teacher", (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(null, err);
             return;
-
         }
 
         let ids = [];
@@ -162,27 +147,24 @@ Teacher.removeAll = result => {
         });
 
 
-    sql.query("DELETE FROM teacher", (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(null, err);
-            return;
-
-        }
-
-        sql.query("DELETE FROM person WHERE id IN (?)", [ids], (err, res) => {
+        sql.query("DELETE FROM teacher", (err, res) => {
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
                 return;
-
             }
 
-            
+            sql.query("DELETE FROM person WHERE id IN (?)", [ids], (err, res) => {
+                if (err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                    return;
+
+                }
+            });
         });
     });
-    });
 };
-            
+
 
 module.exports = Teacher;
