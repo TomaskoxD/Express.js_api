@@ -38,6 +38,14 @@ Teachers
 - `DELETE api/teachers/:id` - Delete a teacher by id
 - `DELETE api/teachers` - Delete all teachers
 
+Students
+- `POST api/students` - Create a new student
+- `GET api/students` - Get all students
+- `GET api/students/:id` - Get a student by id
+- `PUT api/students/:id` - Update a student by id
+- `DELETE api/students/:id` - Delete a student by id
+- `DELETE api/students` - Delete all students
+
 Tutorials
 - `POST api/tutorials` - Create a new tutorial
 - `GET api/tutorials` - Get all tutorials
@@ -56,4 +64,4 @@ Classes
 - `DELETE api/classes/tutorials` - Delete all tutorials from a class
 
 ## Database
-Local MySQL database is used. The database is named `nodejs_express_mysql` and the tables are named `authors`, `teachers` and `tutorials`. The database can be created with the script `db.sql` in the root folder.
+Local MySQL database is used. The database is named `expressAPI` and can be created with the script `db.sql` in the root folder.
