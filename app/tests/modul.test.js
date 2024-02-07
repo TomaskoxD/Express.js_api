@@ -63,8 +63,7 @@ describe('Student API', () => {
                 email: 'admin',
                 password: 'admin'
             });
-        console.log(res.body, "tuuuuuuuuuuuuuuuuuuuuu");
-        token = res.body.token;
+         token = res.body.token;
     });
 
 
@@ -79,9 +78,7 @@ describe('Student API', () => {
                 locker: 101
             });
         expect(res.statusCode).toEqual(200);
-        expect(res.body).toHaveProperty('id');
-        console.log(res.body, "res.body");
-    }
+        expect(res.body).toHaveProperty('id');    }
     );
 
     it('should find student by email', async () => {
@@ -107,7 +104,6 @@ describe('Student API', () => {
     );
 
     it('should update a student', async () => {
-        console.log(student.id, "student.id");
         const res = await request(app)
             .put(`/api/students/${student.id}`)
             .set('Authorization', token)
@@ -151,8 +147,7 @@ describe('Author API', () => {
                 email: 'admin',
                 password: 'admin'
             });
-        console.log(res.body, "tuuuuuuuuuuuuuuuuuuuuu");
-        token = res.body.token;
+         token = res.body.token;
     });
 
 
@@ -167,7 +162,6 @@ describe('Author API', () => {
             });
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty('id');
-        console.log(res.body, "res.body");
     }
     );
 
@@ -194,7 +188,6 @@ describe('Author API', () => {
     );
 
     it('should update a author', async () => {
-        console.log(author.id, "author.id");
         const res = await request(app)
             .put(`/api/authors/${author.id}`)
             .set('Authorization', token)
@@ -238,8 +231,7 @@ describe('Teacher API', () => {
                 email: 'admin',
                 password: 'admin'
             });
-        console.log(res.body, "tuuuuuuuuuuuuuuuuuuuuu");
-        token = res.body.token;
+         token = res.body.token;
     });
 
 
@@ -255,7 +247,6 @@ describe('Teacher API', () => {
             });
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty('id');
-        console.log(res.body, "res.body");
     }
     );
 
@@ -282,7 +273,6 @@ describe('Teacher API', () => {
     );
 
     it('should update a teacher', async () => {
-        console.log(teacher.id, "teacher.id");
         const res = await request(app)
             .put(`/api/teachers/${teacher.id}`)
             .set('Authorization', token)
