@@ -1,6 +1,6 @@
 module.exports = {
   HOST: "localhost",
-  USER: "root",
-  PASSWORD: "Gazela14tomo",
+  USER: "express",
+  PASSWORD: "express",
   DB: "nodemysqlapi"
 };
