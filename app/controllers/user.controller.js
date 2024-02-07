@@ -60,5 +60,39 @@ exports.login = (req, res) => {
                 user: data
             });
         }
+    }
+    );
+}
+
+exports.delete = (req, res) => {
+    User.delete(req.params.id, (err, data) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(404).send({
+                    message: `Not found User with id ${req.params.id}.`
+                });
+            } else {
+                res.status(500).send({
+                    message: "Could not delete User with id " + req.params.id
+                });
+            }
+        } else res.send({ message: `User was deleted successfully!` });
     });
 }
+
+exports.findByEmail = (req, res) => {
+    User.findByEmail(req.body.email, (err, data) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(404).send({
+                    message: `Not found User with email ${req.body.email}.`
+                });
+            } else {
+                res.status(500).send({
+                    message: "Error retrieving User with email " + req.body.email
+                });
+            }
+        } else res.send(data);
+    });
+
+};

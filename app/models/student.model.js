@@ -20,7 +20,7 @@ Student.create = (newStudent, result) => {
             result(null, err);
             return;
         }
-        
+
         sql.query("INSERT INTO student SET ?", { id: res.insertId, grade: grade, locker: locker }, (err, res) => {
             if (err) {
                 console.log("error: ", err);
@@ -52,6 +52,25 @@ Student.findById = (id, result) => {
     });
 };
 
+Student.findByEmail = (email, result) => {
+    sql.query(`SELECT * FROM person JOIN student ON person.id = student.id WHERE person.email = '${email}'`, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+            return;
+        }
+
+        if (res.length) {
+            console.log("found student: ", res[0]);
+            result(null, res[0]);
+            return;
+        }
+
+        // not found Student with the email
+        result({ kind: "not_found" }, null);
+    });
+};
+
 Student.getAll = (name, result) => {
     let query = "SELECT * FROM person JOIN student ON person.id = student.id";
 
@@ -72,41 +91,101 @@ Student.getAll = (name, result) => {
 };
 
 Student.updateById = (id, newStudent, result) => {
-    grade = newStudent.grade;
-    locker = newStudent.locker;
-    delete newStudent.grade;
-    delete newStudent.locker;
-    sql.query(
-        "UPDATE person SET name = ?, email = ? WHERE id = ?",
-        [newStudent.name, newStudent.email, id],
-        (err, res) => {
-            if (err) {
-                console.log("error: ", err);
-                result(null, err);
-                return;
-            }
 
-            if (res.affectedRows == 0) {
-                result({ kind: "not_found" }, null);
-                return;
-            }
+    console.log(newStudent, "newStudent");
+    console.log(id, "id");
 
-            sql.query(
-                "UPDATE student SET grade = ?, locker = ? WHERE id = ?",
-                [grade, locker, id],
-                (err, res) => {
+
+    sql.query("SELECT * FROM student LEFT JOIN person ON student.id = person.id WHERE student.id = ?", id, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+
+        if (res.length) {
+            if (!newStudent.name && !newStudent.email) {
+                if(!newStudent.grade && !newStudent.locker){
+                    result(null, res[0]);
+                    return;
+                }
+                else{
+                    query = "UPDATE student SET ";
+                    if (newStudent.grade) {
+                        query += `grade = ${newStudent.grade}, `;
+                    }
+                    if (newStudent.locker) {
+                        query += `locker = ${newStudent.locker}, `;
+                    }
+                    query = query.slice(0, -2);
+                    query += ` WHERE id = ${id}`;
+                    sql.query(query, (err, res) => {
+                        if (err) {
+                            console.log("error: ", err);
+                            result(null, err);
+                            return;
+                        }
+                        result(null, res);
+                    }
+                    );
+                }
+
+            } else {
+                query = "UPDATE person SET ";
+                if (newStudent.name) {
+                    query += `name = '${newStudent.name}', `;
+                }
+                if (newStudent.email) {
+                    query += `email = '${newStudent.email}', `;
+                }
+                query = query.slice(0, -2);
+                query += ` WHERE id = ${id}`;
+                sql.query(query, (err
+                    , res) => {
                     if (err) {
                         console.log("error: ", err);
                         result(null, err);
                         return;
                     }
+            
 
-                    console.log("updated student: ", { id: id, ...newStudent });
-                    result(null, { id: id, ...newStudent });
+                    if (!newStudent.grade && !newStudent.locker) {
+                        result(null, res[0]);
+                        return;
+                    }
+                    else {
+                        query = "UPDATE student SET ";
+                        if (newStudent.grade) {
+                            query += `grade = ${newStudent.grade}, `;
+                        }
+                        if (newStudent.locker) {
+                            query += `locker = ${newStudent.locker}, `;
+                        }
+                        query = query.slice(0, -2);
+                        query += ` WHERE id = ${id}`;
+                        sql.query(query, (err
+                            , res) => {
+                            if (err) {
+                                console.log("error: ", err);
+                                result(null, err);
+                                return;
+                            }
+                            result(null, res);
+                        }
+                        );
+                    }
                 }
-            );
+                );     
+            }
+            
         }
+        else {
+            result({ kind: "not_found" }, null);
+        }
+    }
+
     );
+
 };
 
 Student.remove = (id, result) => {

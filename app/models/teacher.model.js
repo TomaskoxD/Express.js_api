@@ -20,7 +20,7 @@ Teacher.create = (newTeacher, result) => {
             result(null, err);
             return;
         }
-        
+
         sql.query("INSERT INTO teacher SET ?", { id: res.insertId, office: office, type_of_employment: type_of_employment }, (err, res) => {
             if (err) {
                 console.log("error: ", err);
@@ -52,6 +52,25 @@ Teacher.findById = (id, result) => {
     });
 };
 
+Teacher.findByEmail = (email, result) => {
+    sql.query(`SELECT * FROM person JOIN teacher ON person.id = teacher.id WHERE person.email = '${email}'`, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+            return;
+        }
+
+        if (res.length) {
+            console.log("found teacher: ", res[0]);
+            result(null, res[0]);
+            return;
+        }
+
+        // not found Teacher with the email
+        result({ kind: "not_found" }, null);
+    });
+};
+
 Teacher.getAll = (name, result) => {
     let query = "SELECT * FROM person JOIN teacher ON person.id = teacher.id";
 
@@ -71,42 +90,104 @@ Teacher.getAll = (name, result) => {
     });
 };
 
+
 Teacher.updateById = (id, newTeacher, result) => {
-    office = newTeacher.office;
-    type_of_employment = newTeacher.type_of_employment;
-    delete newTeacher.office;
-    delete newTeacher.type_of_employment;
-    sql.query(
-        "UPDATE person SET name = ?, email = ? WHERE id = ?",
-        [newTeacher.name, newTeacher.email, id],
-        (err, res) => {
-            if (err) {
-                console.log("error: ", err);
-                result(null, err);
-                return;
-            }
 
-            if (res.affectedRows == 0) {
-                result({ kind: "not_found" }, null);
-                return;
-            }
+    console.log(newTeacher, "newTeacher");
+    console.log(id, "id");
 
-            sql.query(
-                "UPDATE teacher SET office = ?, type_of_employment = ? WHERE id = ?",
-                [office, type_of_employment, id],
-                (err, res) => {
+
+    sql.query("SELECT * FROM teacher LEFT JOIN person ON teacher.id = person.id WHERE teacher.id = ?", id, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+        if (res.length) {
+            if (!newTeacher.name && !newTeacher.email) {
+                if (!newTeacher.office && !newTeacher.type_of_employment) {
+                    result(null, res[0]);
+                    return;
+                }
+                else {
+                    query = "UPDATE teacher SET ";
+                    if (newTeacher.office) {
+                        query += `office = '${newTeacher.office}', `;
+                    }
+                    if (newTeacher.type_of_employment) {
+                        query += `type_of_employment = '${newTeacher.type_of_employment}', `;
+                    }
+                    query = query.slice(0, -2);
+                    query += ` WHERE id = ${id}`;
+                    sql.query(query, (err, res) => {
+                        if (err) {
+                            console.log("error: ", err);
+                            result(null, err);
+                            return;
+                        }
+                        result(null, res);
+                    }
+                    );
+                }
+
+            } else {
+                query = "UPDATE person SET ";
+                console.log(newTeacher, "newTeacher pred podmienkou");
+
+                if (newTeacher.name) {
+                    query += `name = '${newTeacher.name}', `;
+                }
+                if (newTeacher.email) {
+                    query += `email = '${newTeacher.email}', `;
+                }
+                query = query.slice(0, -2);
+                query += ` WHERE id = ${id}`;
+                sql.query(query, (err
+                    , res) => {
                     if (err) {
                         console.log("error: ", err);
                         result(null, err);
                         return;
                     }
 
-                    console.log("updated teacher: ", { id: id, ...newTeacher });
-                    result(null, { id: id, ...newTeacher });
+
+                    if (!newTeacher.office && !newTeacher.type_of_employment) {
+                        result(null, res[0]);
+                        return;
+                    }
+                    else {
+                        query = "UPDATE teacher SET ";
+                        if (newTeacher.office) {
+                            query += `office = '${newTeacher.office}', `;
+                        }
+                        if (newTeacher.type_of_employment) {
+                            query += `type_of_employment = '${newTeacher.type_of_employment}', `;
+                        }
+                        query = query.slice(0, -2);
+                        query += ` WHERE id = ${id}`;
+                        sql.query(query, (err
+                            , res) => {
+                            if (err) {
+                                console.log("error: ", err);
+                                result(null, err);
+                                return;
+                            }
+                            result(null, res);
+                        }
+                        );
+                    }
                 }
-            );
+                );
+            }
+
         }
+        else {
+            result({ kind: "not_found" }, null);
+        }
+    }
+
     );
+
 };
 
 Teacher.remove = (id, result) => {

@@ -6,7 +6,8 @@ module.exports = app => {
 
     router.post("/", verifyToken, teachers.create);
     router.get("/", verifyToken, teachers.findAll);
-    router.get("/:id", verifyToken, teachers.findOne);
+    router.get("/email", verifyToken, teachers.findByEmail);
+    router.get("/:id", verifyToken, teachers.findById);
     router.put("/:id", verifyToken, teachers.update);
     router.delete("/", verifyToken, teachers.deleteAll);
     router.delete("/:id", verifyToken, teachers.delete);

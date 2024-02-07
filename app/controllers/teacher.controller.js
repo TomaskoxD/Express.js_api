@@ -43,7 +43,7 @@ exports.findAll = (req, res) => {
 };
 
 
-exports.findOne = (req, res) => {
+exports.findById = (req, res) => {
     Teacher.findById(req.params.id, (err, data) => {
         if (err) {
             if (err.kind === "not_found") {
@@ -59,6 +59,21 @@ exports.findOne = (req, res) => {
     });
 };
 
+exports.findByEmail = (req, res) => {
+    Teacher.findByEmail(req.body.email, (err, data) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(404).send({
+                    message: `Not found Teacher with email ${req.body.email}.`
+                });
+            } else {
+                res.status(500).send({
+                    message: "Error retrieving Teacher with email " + req.body.email
+                });
+            }
+        } else res.send(data);
+    });
+}
 
 exports.update = (req, res) => {
     // Validate Request
@@ -72,7 +87,7 @@ exports.update = (req, res) => {
 
     Teacher.updateById(
         req.params.id,
-        new Author(req.body),
+        new Teacher(req.body),
         (err, data) => {
             if (err) {
                 if (err.kind === "not_found") {
@@ -84,7 +99,7 @@ exports.update = (req, res) => {
                         message: "Error updating Teacher with id " + req.params.id
                     });
                 }
-            } else res.send(data);
+            } else res.send({ message: `Teacher was updated successfully!` });
         }
     );
 };

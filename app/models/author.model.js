@@ -51,6 +51,25 @@ Author.findById = (id, result) => {
     });
 };
 
+Author.findByEmail = (email, result) => {
+    sql.query(`SELECT * FROM person JOIN author ON person.id = author.id WHERE person.email = '${email}'`, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+            return;
+        }
+
+        if (res.length) {
+            console.log("found author: ", res[0]);
+            result(null, res[0]);
+            return;
+        }
+
+        // not found Student with the email
+        result({ kind: "not_found" }, null);
+    });
+};
+
 Author.getAll = (name, result) => {
     let query = "SELECT * FROM person JOIN author ON person.id = author.id";
 
@@ -70,43 +89,99 @@ Author.getAll = (name, result) => {
     });
 };
 
-Author.updateById = (id, author, result) => {
-    //remove active from author
-    active = author.active;
-    delete author.active;
-    sql.query(
-        "UPDATE person SET name = ?, email = ? WHERE id = ?",
-        [author.name, author.email, id],
-        (err, res) => {
-            if (err) {
-                console.log("error: ", err);
-                result(null, err);
-                return;
-            }
+Author.updateById = (id, newAuthor, result) => {
 
-            if (res.affectedRows == 0) {
-                // not found Author with the id
-                result({ kind: "not_found" }, null);
-                return;
-            }
+    console.log(newAuthor, "newAuthor");
+    console.log(id, "id");
 
-            sql.query(
-                "UPDATE author SET active = ? WHERE id = ?",
-                [active, id],
-                (err, res) => {
+
+    sql.query("SELECT * FROM author LEFT JOIN person ON author.id = person.id WHERE author.id = ?", id, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+        if (res.length) {
+            if (!newAuthor.name && !newAuthor.email) {
+                if (newAuthor.active === undefined) {
+                    result(null, res[0]);
+                    return;
+                }
+                else {
+                    query = "UPDATE author SET ";
+                    if (newAuthor.active !== undefined) {
+                        query += `active = ${newAuthor.active}, `;
+                    }
+                    query = query.slice(0, -2);
+                    query += ` WHERE id = ${id}`;
+                    sql.query(query, (err, res) => {
+                        if (err) {
+                            console.log("error: ", err);
+                            result(null, err);
+                            return;
+                        }
+                        result(null, res);
+                    }
+                    );
+                }
+
+            } else {
+                query = "UPDATE person SET ";
+                if (newAuthor.name) {
+                    query += `name = '${newAuthor.name}', `;
+                }
+                if (newAuthor.email) {
+                    query += `email = '${newAuthor.email}', `;
+                }
+                query = query.slice(0, -2);
+                query += ` WHERE id = ${id}`;
+                sql.query(query, (err
+                    , res) => {
                     if (err) {
                         console.log("error: ", err);
                         result(null, err);
                         return;
                     }
 
-                    console.log("updated author: ", { id: id, ...author });
-                    result(null, { id: id, ...author });
+
+                    if (newAuthor.active === undefined) {
+                        result(null, res[0]);
+                        return;
+                    }
+                    else {
+                        query = "UPDATE author SET ";
+                        if (newAuthor.active !== undefined) {
+                            query += `active = ${newAuthor.active}, `;
+                        }
+                        query = query.slice(0, -2);
+                        query += ` WHERE id = ${id}`;
+                        sql.query(query, (err
+                            , res) => {
+                            if (err) {
+                                console.log("error: ", err);
+                                result(null, err);
+                                return;
+                            }
+                            result(null, res);
+                        }
+                        );
+                    }
                 }
-            );
+                );
+            }
+
         }
+        else {
+            result({ kind: "not_found" }, null);
+        }
+    }
+
     );
+
 };
+
+
+
 
 Author.remove = (id, result) => {
     // remove all tutorials by the author

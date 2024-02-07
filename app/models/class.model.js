@@ -1,26 +1,3 @@
-// CREATE TABLE IF NOT EXISTS `class` (
-//     id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, 
-//     name varchar(255) NOT NULL, 
-//     teacher_id int, 
-//     FOREIGN KEY (teacher_id) REFERENCES teacher (id)
-// ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
-
-// CREATE TABLE IF NOT EXISTS `student_class` (
-//     student_id int, 
-//     class_id int, 
-//     FOREIGN KEY (student_id) REFERENCES student (id), 
-//     FOREIGN KEY (class_id) REFERENCES class (id)
-// ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
-
-// CREATE TABLE IF NOT EXISTS `class_tutorial` (
-//     class_id int, 
-//     tutorial_id int, 
-//     FOREIGN KEY (class_id) REFERENCES class (id), 
-//     FOREIGN KEY (tutorial_id) REFERENCES tutorials (id)
-// ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
-
-
-
 const sql = require("./db.js");
 
 // constructor
