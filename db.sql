@@ -1,21 +1,13 @@
 -- Active: 1669418752265@@localhost@3306@expressAPI
 DROP TABLE IF EXISTS `user`;
-
-DROP TABLE IF EXISTS `person`;
-
-DROP TABLE IF EXISTS `author`;
-
-DROP TABLE IF EXISTS `teacher`;
-
-DROP TABLE IF EXISTS `student`;
-
-DROP TABLE IF EXISTS `tutorials`;
-
-DROP TABLE IF EXISTS `class`;
-
 DROP TABLE IF EXISTS `student_class`;
-
 DROP TABLE IF EXISTS `class_tutorial`;
+DROP TABLE IF EXISTS `tutorials`;
+DROP TABLE IF EXISTS `class`;
+DROP TABLE IF EXISTS `author`;
+DROP TABLE IF EXISTS `teacher`;
+DROP TABLE IF EXISTS `student`;
+DROP TABLE IF EXISTS `person`;
 
 CREATE TABLE IF NOT EXISTS `user` (
     id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, username VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL
@@ -47,11 +39,11 @@ CREATE TABLE IF NOT EXISTS `class` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 CREATE TABLE IF NOT EXISTS `student_class` (
-    student_id int, class_id int, FOREIGN KEY (student_id) REFERENCES student (id), FOREIGN KEY (class_id) REFERENCES class (id)
+    student_id int, class_id int, FOREIGN KEY (student_id) REFERENCES student (id) ON DELETE CASCADE, FOREIGN KEY (class_id) REFERENCES class (id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 CREATE TABLE IF NOT EXISTS `class_tutorial` (
-    class_id int, tutorial_id int, FOREIGN KEY (class_id) REFERENCES class (id), FOREIGN KEY (tutorial_id) REFERENCES tutorials (id)
+    class_id int, tutorial_id int, FOREIGN KEY (class_id) REFERENCES class (id) ON DELETE CASCADE, FOREIGN KEY (tutorial_id) REFERENCES tutorials (id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 -- seed data

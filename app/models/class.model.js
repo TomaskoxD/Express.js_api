@@ -1,3 +1,4 @@
+const { query } = require("express");
 const sql = require("./db.js");
 
 // constructor
@@ -182,7 +183,6 @@ Class.addTutorial = (class_id, tutorial_id, result) => {
         });
 };
 
-
 Class.removeStudent = (class_id, student_id, result) => {
     sql.query(`DELETE FROM student_class WHERE student_id = ${student_id} AND class_id = ${class_id}`, (err, res) => {
         if (err) {
@@ -195,9 +195,7 @@ Class.removeStudent = (class_id, student_id, result) => {
     }
     );
 
-}
-
-
+};
 
 Class.removeTutorial = (class_id, tutorial_id, result) => {
     sql.query(`DELETE FROM class_tutorial WHERE class_id = ${class_id} AND tutorial_id = ${tutorial_id}`, (err, res) => {
@@ -211,7 +209,8 @@ Class.removeTutorial = (class_id, tutorial_id, result) => {
     }
     );
 
-}
+};
+
 function findByCondition(condition, result) {
     classId = condition.split("=")[1].trim();
     console.log(classId, "SELECT * FROM class WHERE id = ${classId}");
@@ -328,6 +327,261 @@ function findByCondition(condition, result) {
 }
 Class.findById = (classId, result) => {
     findByCondition(`id = ${classId}`, result);
+}
+
+Class.getAll = (conditions, result) => {
+    // ?????????????????????? toto hadze objekt a nie string
+    console.log("condition", conditions);
+    let query = "SELECT * FROM class WHERE";
+    for (let key in conditions) {
+        if (conditions[key] !== "") {
+            query += ` ${key} = '${conditions[key]}' AND`;
+        }
+    }
+    query = query.slice(0, -3);
+
+
+    console.log(query);
+    // ///////////////////////////
+    sql.query(query, (err, res
+    ) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else {
+            let classes = res;
+            let classIds = res.map(classObj => classObj.id);
+            if (classIds.length) {
+                sql.query(`SELECT student_id, class_id FROM student_class WHERE class_id IN (${classIds.join(",")})`, (err, res) => {
+                    if (err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                    }
+                    else if (!res.length) {
+                        console.log("no students in class", classes);
+                        classes.forEach(classObj => classObj.students = []);
+                        sql.query(`SELECT tutorial_id, class_id FROM class_tutorial WHERE class_id IN (${classIds.join(",")})`, (err, res) => {
+                            if (err) {
+                                console.log("error: ", err);
+                                result(null, err);
+                            }
+                            else if (!res.length) {
+                                console.log("no tutorials in class", classes);
+                                classes.forEach(classObj => classObj.tutorials = []);
+                                result(null, classes);
+                            }
+                            else {
+                                // get tutorial info from tutorial table
+                                classes.forEach(classObj => classObj.tutorials = []);
+                                let tutorialIds = res.map(tutorial => tutorial.tutorial_id);
+                                if (tutorialIds.length) {
+                                    sql.query(`SELECT * FROM tutorials LEFT JOIN author ON tutorials.author_id = author.id WHERE tutorials.id IN (${tutorialIds.join(",")})`, (err, res) => {
+                                        if (err) {
+                                            console.log("error: ", err);
+                                            result(null, err);
+                                        }
+                                        else {
+                                            classes.forEach(classObj => classObj.tutorials = res);
+                                            result(null, classes);
+                                        }
+                                    });
+                                }
+                                else {
+                                    result(null, classes);
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        classes.forEach(classObj => classObj.students = []);
+                        let studentIds = res.map(student => student.student_id);
+                        console.log(studentIds);
+
+                        if (studentIds.length) {
+                            sql.query(`SELECT * FROM student
+                                 INNER JOIN person ON student.id = person.id
+                                 WHERE student.id IN (${studentIds.join(",")})`, (err, res) => {
+                                if (err) {
+                                    console.log("error: ", err);
+                                    result(null, err);
+                                }
+                                else {
+                                    classes
+                                        .forEach(classObj => classObj.students = res);
+                                    sql.query(`SELECT tutorial_id, class_id FROM class_tutorial WHERE class_id IN (${classIds.join(",")})`, (err, res) => {
+                                        if (err) {
+                                            console.log("error: ", err);
+                                            result(null, err);
+                                        }
+                                        else if (!res.length) {
+                                            console.log("no tutorials in class", classes);
+                                            classes.forEach(classObj => classObj.tutorials = []);
+                                        }
+                                        else {
+                                            // get tutorial info from tutorial table
+                                            classes.forEach(classObj => classObj.tutorials = []);
+                                            let tutorialIds = res.map(tutorial => tutorial.tutorial_id);
+                                            if (tutorialIds.length) {
+                                                sql.query(`SELECT * FROM tutorials LEFT JOIN author ON tutorials.author_id = author.id WHERE tutorials.id IN (${tutorialIds.join(",")})`, (err, res) => {
+                                                    if (err) {
+                                                        console.log("error: ", err);
+                                                        result(null, err);
+                                                    }
+                                                    else {
+                                                        classes.forEach(classObj => classObj.tutorials = res);
+                                                        result(null, classes);
+                                                    }
+                                                });
+                                            }
+                                            else {
+                                                result(null, classes);
+                                            }
+                                        }
+                                    }
+                                    );
+                                }
+                            }
+                            );
+                        }
+                        else {
+                            result(null, classes);
+                        }
+                        // result(null, classes);
+                    }
+                }
+                );
+            }
+            else {
+                result(null, classes);
+            }
+        }
+    }
+    );
+}
+
+
+Class.updateById = (id, classObj, result) => {
+    sql.query(
+        "UPDATE class SET name = ? WHERE id = ?",
+        [classObj.name, id],
+        (err, res) => {
+            if (err) {
+                console.log("error: ", err);
+                result(null, err);
+                return;
+            }
+
+            if (res.affectedRows == 0) {
+                // not found class with the id
+                result({ kind: "not_found" }, null);
+                return;
+            }
+
+            console.log("updated class: ", { id: id, ...classObj });
+            result(null, { id: id, ...classObj });
+        }
+    );
+};
+
+
+
+Class.remove = (id, result) => {
+    sql.query("DELETE FROM student_class WHERE class_id = ?", id, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+
+
+        console.log("deleted class_student with id: ", id);
+
+        sql.query("DELETE FROM class_tutorial WHERE class_id = ?", id, (err, res) => {
+            if (err) {
+                console.log("error: ", err);
+                result(null, err);
+                return;
+            }
+            console.log("deleted class_tutorial with id: ", id);
+
+            sql.query("DELETE FROM class WHERE id = ?", id, (err, res) => {
+                if (err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                    return;
+                }
+                if (res.affectedRows == 0) {
+                    console.log("res.affectedRows == 0");
+                    // not found class with the id
+                    result({ kind: "not_found" }, null);
+                    return;
+                }
+                console.log("deleted class with id: ", id);
+                console.log("returned from class_tutorial");
+                result(null, res);
+            });
+        }
+        );
+    });
+};
+
+Class.getCount = (id, result) => {
+    console.log("id", id);
+
+    // check if class exists
+    sql.query("SELECT * FROM class WHERE id = ?", id, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+        if (!res.length) {
+            console.log("class not found");
+            result({ kind: "not_found" });
+            return;
+        }
+        // get count of students and tutorials in a class
+        sql.query("SELECT COUNT(*) as student_count FROM student_class WHERE class_id = ?", id, (err, res) => {
+            if (err) {
+                console.log("error: ", err);
+                result(null, err);
+                return;
+            }
+            let studentCount = res[0].student_count;
+            sql.query("SELECT COUNT(*) as tutorial_count FROM class_tutorial WHERE class_id = ?", id, (err, res) => {
+                if (err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                    return;
+                }
+                let tutorialCount = res[0].tutorial_count;
+                result(null, { student_count: studentCount, tutorial_count: tutorialCount });
+            });
+        }
+        );
+    });
+
+}
+
+Class.changeTeacher = (class_id, teacher_id, result) => {
+    console.log("class_id", class_id);
+    console.log("teacher_id", teacher_id);
+    sql.query(`UPDATE class SET teacher_id = ${teacher_id} WHERE id = ${class_id}`, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+        if (res.affectedRows == 0) {
+            console.log("res.affectedRows == 0");
+            // not found class with the id
+            result({ kind: "not_found" }, null);
+            return;
+        }
+        console.log("updated class with id: ", class_id);
+        result(null, res);
+    });
 }
 
 module.exports = Class;
