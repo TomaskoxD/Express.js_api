@@ -482,22 +482,22 @@ describe('Class API', () => {
             .send({
                 name: 'class'
             });
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toBeInstanceOf(Array);
-            expect(res.body.length).toBeGreaterThan(0);
-        }
-        );
-        
-        it('should get all classes', async () => {
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body.length).toBeGreaterThan(0);
+    }
+    );
+
+    it('should get all classes', async () => {
         const res = await request(app)
             .get('/api/classes')
             .set('Authorization', token);
         expect(res.statusCode).toEqual(200);
         expect(res.body).toBeInstanceOf(Array);
         expect(res.body.length).toBeGreaterThan(0);
-        }
-        );
-    
+    }
+    );
+
     it('should update a class', async () => {
         const res = await request(app)
             .put(`/api/classes/${class_.id}`)
@@ -632,7 +632,7 @@ describe('Tutorial API', () => {
         expect(res_tutorial.body).toHaveProperty('id');
 
         tutorial = res_tutorial.body;
-    }  
+    }
     );
 
     it('should find tutorial by title', async () => {
