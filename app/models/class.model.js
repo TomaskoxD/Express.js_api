@@ -567,6 +567,19 @@ Class.getCount = (id, result) => {
 Class.changeTeacher = (class_id, teacher_id, result) => {
     console.log("class_id", class_id);
     console.log("teacher_id", teacher_id);
+
+    sql.query(`SELECT * FROM teacher WHERE id = ${teacher_id}`, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+            return;
+        }
+        if (!res.length) {
+            console.log("teacher not found");
+            result({ kind: "not_found_teacher" }, null);
+            return;
+        }
+    
     sql.query(`UPDATE class SET teacher_id = ${teacher_id} WHERE id = ${class_id}`, (err, res) => {
         if (err) {
             console.log("error: ", err);
@@ -576,12 +589,15 @@ Class.changeTeacher = (class_id, teacher_id, result) => {
         if (res.affectedRows == 0) {
             console.log("res.affectedRows == 0");
             // not found class with the id
-            result({ kind: "not_found" }, null);
+            result({ kind: "not_found_class" }, null);
             return;
         }
         console.log("updated class with id: ", class_id);
         result(null, res);
-    });
+    }
+        );
+    }
+    );
 }
 
 module.exports = Class;

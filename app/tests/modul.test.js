@@ -135,7 +135,6 @@ describe('Student API', () => {
 }
 );
 
-
 describe('Author API', () => {
     let author;
     let token;
@@ -219,7 +218,6 @@ describe('Author API', () => {
 }
 );
 
-
 describe('Teacher API', () => {
     let teacher;
     let token;
@@ -301,7 +299,6 @@ describe('Teacher API', () => {
 
 }
 );
-
 
 describe('Class API', () => {
     let class_;
@@ -582,14 +579,117 @@ describe('Class API', () => {
     }
 
     );
-
-    //add, del student/tutorial ide
-    // delete class ide
-
-
-
 });
 
+describe('Tutorial API', () => {
+    let tutorial;
+    let token;
+
+    // get token
+    beforeAll(async () => {
+        const res = await request(app)
+            .post('/api/users/login')
+            .send({
+                email: 'admin',
+                password: 'admin'
+            });
+        token = res.body.token;
+    });
+
+
+    it('should create a new tutorial', async () => {
+        const res = await request(app)
+            .post('/api/authors')
+            .set('Authorization', token)
+            .send({
+                name: 'author',
+                email: 'author@mail.com',
+                active: true
+            });
+        expect(res.statusCode).toEqual(200);
+
+        let author;
+
+        const res_author = await request(app)
+            .get('/api/authors/email')
+            .set('Authorization', token)
+            .send({
+                email: 'author@mail.com'
+            });
+        expect(res_author.statusCode).toEqual(200);
+        author = res_author.body.id;
+
+        const res_tutorial = await request(app)
+            .post('/api/tutorials')
+            .set('Authorization', token)
+            .send({
+                title: 'tutorial',
+                description: 'description',
+                published: true,
+                author_id: author
+            });
+        expect(res_tutorial.statusCode).toEqual(200);
+        expect(res_tutorial.body).toHaveProperty('id');
+
+        tutorial = res_tutorial.body;
+    }  
+    );
+
+    it('should find tutorial by title', async () => {
+        const res = await request(app)
+            .get('/api/tutorials')
+            .set('Authorization', token)
+            .send({
+                title: 'tutorial'
+            });
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body.length).toBeGreaterThan(0);
+    }
+    );
+
+    it('should get all tutorials', async () => {
+        const res = await request(app)
+            .get('/api/tutorials')
+            .set('Authorization', token);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body.length).toBeGreaterThan(0);
+    }
+    );
+
+    it('should update a tutorial', async () => {
+        const res = await request(app)
+            .put(`/api/tutorials/${tutorial.id}`)
+            .set('Authorization', token)
+            .send({
+                title: "tutorial_updated",
+            });
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toHaveProperty('message');
+
+        const updatedTutorial = await request(app)
+            .get(`/api/tutorials/${tutorial.id}`)
+            .set('Authorization', token);
+        expect(updatedTutorial.statusCode).toEqual(200);
+        expect(updatedTutorial.body.title).toEqual("tutorial_updated");
+    }
+    );
+
+    it('should delete a tutorial and author', async () => {
+        const res = await request(app)
+            .delete(`/api/tutorials/${tutorial.id}`)
+            .set('Authorization', token);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toHaveProperty('message');
+
+        const res_author = await request(app)
+            .delete(`/api/authors/${tutorial.author_id}`)
+            .set('Authorization', token);
+        expect(res_author.statusCode).toEqual(200);
+        expect(res_author.body).toHaveProperty('message');
+    });
+});
 // kill server 
 afterAll(done => {
     if (server)

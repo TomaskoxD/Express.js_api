@@ -9,6 +9,7 @@ module.exports = app => {
   router.post("/tutorial", verifyToken, classes.addTutorial);
   router.get("/count/:id", verifyToken, classes.getCount);
   router.get("/", verifyToken, classes.findAll);
+  router.get("/:id", verifyToken, classes.findById);
 
   router.put("/teacher", verifyToken, classes.changeTeacher);
   router.put("/:id", verifyToken, classes.update);

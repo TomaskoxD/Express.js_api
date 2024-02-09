@@ -349,7 +349,7 @@ exports.update = (req, res) => {
                         message: "Error updating Class with id " + req.params.id
                     });
                 }
-            } else res.send(data);
+            } else res.status(200).send({ message: "Class updated successfully." });
         }
     );
 };
@@ -367,16 +367,22 @@ exports.changeTeacher = (req, res) => {
         req.body.teacher_id,
         (err, data) => {
             if (err) {
-                if (err.kind === "not_found") {
+                if (err.kind === "not_found_class") {
                     res.status(404).send({
                         message: `Not found Class with id ${req.body.class_id}.`
                     });
-                } else {
+                }
+                else if (err.kind === "not_found_teacher") {
+                    res.status(404).send({
+                        message: `Not found Teacher with id ${req.body.teacher_id}.`
+                    });
+                }
+                else {
                     res.status(500).send({
                         message: "Error updating Class with id " + req.body.class_id
                     });
                 }
-            } else res.send(message = "Teacher changed successfully");
+            } else res.status(200).send({ message: "Teacher updated successfully." });
         }
     );
 }

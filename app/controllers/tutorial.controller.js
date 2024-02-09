@@ -121,7 +121,7 @@ exports.update = (req, res) => {
             message: "Error updating Tutorial with id " + req.params.id
           });
         }
-      } else res.send(data);
+      } else res.status(200).send({ message: `Tutorial was updated successfully!` });
     }
   );
 };
